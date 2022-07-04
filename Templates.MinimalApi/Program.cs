@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Templates.MinimalApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,33 @@ app.MapGet("mix/{routeParam}", (
 app.MapPost("people", ([FromBody] Person person) =>
 {
   return Results.Ok(person);
+});
+
+app.MapGet("httpcontext-1", async context =>
+{
+  await context.Response.WriteAsync("Hello from HttpContext 1");
+});
+
+app.MapGet("httpcontext-2", async (HttpContext context) =>
+{
+  await context.Response.WriteAsync("Hello from HttpContext 2");
+});
+
+
+app.MapGet("http", (HttpRequest request,HttpResponse response) =>
+{
+  return Results.Ok();
+});
+
+app.MapGet("claims", (ClaimsPrincipal user) =>
+{
+  
+});
+
+app.MapGet("cancel", (CancellationToken token) =>
+{
+  token.ThrowIfCancellationRequested();
+  return Results.Ok();
 });
 
 app.Run();
