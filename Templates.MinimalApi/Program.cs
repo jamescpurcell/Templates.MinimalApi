@@ -1,17 +1,26 @@
-using Templates.MinimalApi;
+using Templates.MinimalApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<GuidGenerator>();
 
 // Swashbuckle specific services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Db Setup
+builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
+  new SQLServerConnectionFactory(
+    builder.Configuration.GetValue<string>("Database:ConnectionString")));
+builder.Services.AddSingleton<DatabaseInitializer>();
+
 var app = builder.Build();
 
-// middleware setup for swagger at https://localhost/swagger
+// Swagger at https://localhost/swagger
 app.UseSwagger(options => { });
 app.UseSwaggerUI(options => { });
+
+// Db initialation
+var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
+await databaseInitializer.InitializeAsync();
 
 app.MapGet("Logging", (ILogger<Program> logger) =>
 {
