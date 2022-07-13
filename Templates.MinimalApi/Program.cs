@@ -1,4 +1,6 @@
 using Templates.MinimalApi.Data;
+using Templates.MinimalApi.Models;
+using Templates.MinimalApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,9 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
     builder.Configuration.GetValue<string>("Database:ConnectionString")));
 builder.Services.AddSingleton<DatabaseInitializer>();
 
+// Repos
+builder.Services.AddSingleton<IBookService, BookService>();
+
 var app = builder.Build();
 
 // Swagger at https://localhost/swagger
@@ -22,10 +27,18 @@ app.UseSwaggerUI(options => { });
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await databaseInitializer.InitializeAsync();
 
-app.MapGet("Logging", (ILogger<Program> logger) =>
+app.MapPost("books", async (Book book, IBookService bookService) =>
 {
-  logger.LogInformation("Hello from info stream");
-  return Results.Ok();
+  var created = await bookService.CreateAsync(book);
+  if (!created)
+  {
+    return Results.BadRequest(new
+    {
+      errorMessage = "A book with this ISBN-13 already exists"
+    });
+  }
+
+  return Results.Created($"/books/{book.Isbn}", book);
 });
 
 app.Run();
