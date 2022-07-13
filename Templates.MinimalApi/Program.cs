@@ -1,6 +1,9 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Templates.MinimalApi.Data;
 using Templates.MinimalApi.Models;
 using Templates.MinimalApi.Services;
+using Templates.MinimalApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,9 +17,13 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
     builder.Configuration.GetValue<string>("Database:ConnectionString")));
 builder.Services.AddSingleton<DatabaseInitializer>();
 
-// Repos
+// Application Services
 builder.Services.AddSingleton<IBookService, BookService>();
 
+// Validators
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// let's build some middleware
 var app = builder.Build();
 
 // Swagger at https://localhost/swagger
@@ -27,18 +34,27 @@ app.UseSwaggerUI(options => { });
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await databaseInitializer.InitializeAsync();
 
-app.MapPost("books", async (Book book, IBookService bookService) =>
+// endpoints for now!
+app.MapPost("books", async (Book book, IBookService bookService,
+  IValidator<Book> validator) =>
 {
+  var validationResult = await validator.ValidateAsync(book);
+  if (!validationResult.IsValid)
+  {
+    return Results.BadRequest(validationResult.Errors);
+  }
+
   var created = await bookService.CreateAsync(book);
   if (!created)
   {
-    return Results.BadRequest(new
+    return Results.BadRequest(new List<ValidationFailure>
     {
-      errorMessage = "A book with this ISBN-13 already exists"
+      new ("Isbn","A book with this ISBN-13 already exists")
     });
   }
 
   return Results.Created($"/books/{book.Isbn}", book);
 });
 
+// application start
 app.Run();
