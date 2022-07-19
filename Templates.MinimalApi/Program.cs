@@ -56,5 +56,11 @@ app.MapPost("books", async (Book book, IBookService bookService,
   return Results.Created($"/books/{book.Isbn}", book);
 });
 
+app.MapGet("books", async (IBookService bookService) =>
+{
+  var books = await bookService.GetAllAsync();
+  return Results.Ok(books);
+});
+
 // application start
 app.Run();
