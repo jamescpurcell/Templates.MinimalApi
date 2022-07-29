@@ -34,7 +34,7 @@ app.UseSwaggerUI(options => { });
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await databaseInitializer.InitializeAsync();
 
-// endpoints for now!
+// endpoints
 app.MapPost("books", async (Book book, IBookService bookService,
   IValidator<Book> validator) =>
 {
@@ -71,6 +71,26 @@ app.MapGet("books/{isbn}", async (string isbn, IBookService bookService) =>
 {
   var book = await bookService.GetByIsbnAsync(isbn);
   return book is not null ? Results.Ok(book) : Results.BadRequest();
+});
+
+app.MapPut("books/{isbn}", async (string isbn,Book book, IBookService bookService,
+  IValidator<Book> validator) =>
+{
+  book.Isbn = isbn;
+  var validationResult = await validator.ValidateAsync(book);
+  if (!validationResult.IsValid)
+  {
+    return Results.BadRequest(validationResult.Errors);
+  }
+
+  var updated = await bookService.UpdateAsync(book);
+  return updated ? Results.Ok(book) : Results.NotFound();
+});
+
+app.MapDelete("books/{isbn}", async (string isbn, IBookService bookService) =>
+{
+  var deleted = await bookService.DeleteAsync(isbn);
+  return deleted ? Results.NoContent() : Results.NotFound();
 });
 
 // application start
