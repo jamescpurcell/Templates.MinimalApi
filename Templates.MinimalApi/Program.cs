@@ -1,11 +1,20 @@
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
+using Templates.MinimalApi.Auth;
 using Templates.MinimalApi.Data;
 using Templates.MinimalApi.Models;
 using Templates.MinimalApi.Services;
-using Templates.MinimalApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile(
+  "appsettings.Local.json", true, true);
+
+// Authentication
+builder.Services.AddAuthentication(ApiKeySchemeConstants.SchemeName)
+  .AddScheme<ApiKeyAuthSchemeOptions, ApiKeyAuthHandler>(ApiKeySchemeConstants.SchemeName, _ => { });
+builder.Services.AddAuthorization();
 
 // Swashbuckle specific services
 builder.Services.AddEndpointsApiExplorer();
@@ -30,12 +39,16 @@ var app = builder.Build();
 app.UseSwagger(options => { });
 app.UseSwaggerUI(options => { });
 
+app.UseAuthorization();
+
 // Db initialation
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await databaseInitializer.InitializeAsync();
 
 // endpoints
-app.MapPost("books", async (Book book, IBookService bookService,
+app.MapPost("books",
+  [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
+  async (Book book, IBookService bookService,
   IValidator<Book> validator) =>
 {
   var validationResult = await validator.ValidateAsync(book);
@@ -56,7 +69,9 @@ app.MapPost("books", async (Book book, IBookService bookService,
   return Results.Created($"/books/{book.Isbn}", book);
 });
 
-app.MapGet("books", async (IBookService bookService, string? searchTerm) =>
+app.MapGet("books",
+  [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
+  async (IBookService bookService, string? searchTerm) =>
 {
   if (searchTerm is not null && !string.IsNullOrWhiteSpace(searchTerm))
   {
@@ -67,13 +82,17 @@ app.MapGet("books", async (IBookService bookService, string? searchTerm) =>
   return Results.Ok(books);
 });
 
-app.MapGet("books/{isbn}", async (string isbn, IBookService bookService) =>
+app.MapGet("books/{isbn}",
+  [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
+  async (string isbn, IBookService bookService) =>
 {
   var book = await bookService.GetByIsbnAsync(isbn);
   return book is not null ? Results.Ok(book) : Results.BadRequest();
 });
 
-app.MapPut("books/{isbn}", async (string isbn,Book book, IBookService bookService,
+app.MapPut("books/{isbn}",
+  [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
+  async (string isbn, Book book, IBookService bookService,
   IValidator<Book> validator) =>
 {
   book.Isbn = isbn;
@@ -87,7 +106,9 @@ app.MapPut("books/{isbn}", async (string isbn,Book book, IBookService bookServic
   return updated ? Results.Ok(book) : Results.NotFound();
 });
 
-app.MapDelete("books/{isbn}", async (string isbn, IBookService bookService) =>
+app.MapDelete("books/{isbn}",
+  [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
+  async (string isbn, IBookService bookService) =>
 {
   var deleted = await bookService.DeleteAsync(isbn);
   return deleted ? Results.NoContent() : Results.NotFound();
