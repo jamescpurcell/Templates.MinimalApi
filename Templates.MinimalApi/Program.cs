@@ -49,7 +49,8 @@ await databaseInitializer.InitializeAsync();
 app.MapPost("books",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
   async (Book book, IBookService bookService,
-  IValidator<Book> validator) =>
+  IValidator<Book> validator, LinkGenerator linker,
+  HttpContext httpContext) =>
 {
   var validationResult = await validator.ValidateAsync(book);
   if (!validationResult.IsValid)
@@ -66,8 +67,15 @@ app.MapPost("books",
     });
   }
 
-  return Results.Created($"/books/{book.Isbn}", book);
-});
+  // nullable at the end
+  var path = linker.GetPathByName("GetBook", new { isbn = book.Isbn })!;
+  //var locationUri = linker.GetUriByName(httpContext, "GetBook", new { isbn = book.Isbn })!;
+  return Results.Created(path, book);
+  // one way
+  //return Results.CreatedAtRoute("GetBook", new { isbn = book.Isbn }, book);
+  //another way that could be a bad hard code
+  //return Results.Created($"/books/{book.Isbn}", book);
+}).WithName("CreateBook");
 
 app.MapGet("books",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -80,7 +88,7 @@ app.MapGet("books",
   }
   var books = await bookService.GetAllAsync();
   return Results.Ok(books);
-});
+}).WithName("GetBooks");
 
 app.MapGet("books/{isbn}",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -88,7 +96,7 @@ app.MapGet("books/{isbn}",
 {
   var book = await bookService.GetByIsbnAsync(isbn);
   return book is not null ? Results.Ok(book) : Results.BadRequest();
-});
+}).WithName("GetBook");
 
 app.MapPut("books/{isbn}",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -104,7 +112,7 @@ app.MapPut("books/{isbn}",
 
   var updated = await bookService.UpdateAsync(book);
   return updated ? Results.Ok(book) : Results.NotFound();
-});
+}).WithName("UpdateBook");
 
 app.MapDelete("books/{isbn}",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -112,7 +120,7 @@ app.MapDelete("books/{isbn}",
 {
   var deleted = await bookService.DeleteAsync(isbn);
   return deleted ? Results.NoContent() : Results.NotFound();
-});
+}).WithName("DeleteBook");
 
 // application start
 app.Run();
