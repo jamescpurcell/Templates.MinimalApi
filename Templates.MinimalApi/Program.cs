@@ -6,7 +6,13 @@ using Templates.MinimalApi.Data;
 using Templates.MinimalApi.Models;
 using Templates.MinimalApi.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+  Args = args,
+  WebRootPath = "./wwwroot",
+  EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+  ApplicationName = "Library.Api"
+});
 
 builder.Configuration.AddJsonFile(
   "appsettings.Local.json", true, true);
@@ -75,7 +81,11 @@ app.MapPost("books",
   //return Results.CreatedAtRoute("GetBook", new { isbn = book.Isbn }, book);
   //another way that could be a bad hard code
   //return Results.Created($"/books/{book.Isbn}", book);
-}).WithName("CreateBook");
+}).WithName("CreateBook")
+  .Accepts<Book>("application/json")
+  .Produces<Book>(201)
+  .Produces<IEnumerable<ValidationFailure>>(400)
+  .WithTags("Books");
 
 app.MapGet("books",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -88,7 +98,9 @@ app.MapGet("books",
   }
   var books = await bookService.GetAllAsync();
   return Results.Ok(books);
-}).WithName("GetBooks");
+}).WithName("GetBooks")
+  .Produces<IEnumerable<Book>>(200)
+  .WithTags("Books");
 
 app.MapGet("books/{isbn}",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -96,7 +108,9 @@ app.MapGet("books/{isbn}",
 {
   var book = await bookService.GetByIsbnAsync(isbn);
   return book is not null ? Results.Ok(book) : Results.BadRequest();
-}).WithName("GetBook");
+}).WithName("GetBook")
+  .Produces<Book>(200)
+  .WithTags("Books");
 
 app.MapPut("books/{isbn}",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -112,7 +126,11 @@ app.MapPut("books/{isbn}",
 
   var updated = await bookService.UpdateAsync(book);
   return updated ? Results.Ok(book) : Results.NotFound();
-}).WithName("UpdateBook");
+}).WithName("UpdateBook")
+  .Accepts<Book>("application/json")
+  .Produces<Book>(200)
+  .Produces<IEnumerable<ValidationFailure>>(400)
+  .WithTags("Books");
 
 app.MapDelete("books/{isbn}",
   [Authorize(AuthenticationSchemes = ApiKeySchemeConstants.SchemeName)]
@@ -120,7 +138,10 @@ app.MapDelete("books/{isbn}",
 {
   var deleted = await bookService.DeleteAsync(isbn);
   return deleted ? Results.NoContent() : Results.NotFound();
-}).WithName("DeleteBook");
+}).WithName("DeleteBook")
+  .Produces(204)
+  .Produces(404)
+  .WithTags("Books");
 
 // application start
 app.Run();
