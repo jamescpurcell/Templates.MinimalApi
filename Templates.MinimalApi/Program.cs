@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Templates.MinimalApi.Auth;
 using Templates.MinimalApi.Data;
 using Templates.MinimalApi.Models;
@@ -9,9 +10,15 @@ using Templates.MinimalApi.Services;
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
   Args = args,
-  WebRootPath = "./wwwroot",
-  EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-  ApplicationName = "Library.Api"
+  //WebRootPath = "./wwwroot",
+  //EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+  //ApplicationName = "Library.Api"
+});
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+  options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+  options.JsonSerializerOptions.IncludeFields = true;
 });
 
 builder.Configuration.AddJsonFile(
