@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Templates.MinimalApi;
 using Templates.MinimalApi.Auth;
 using Templates.MinimalApi.Data;
 using Templates.MinimalApi.Models;
@@ -53,10 +54,6 @@ app.UseSwagger(options => { });
 app.UseSwaggerUI(options => { });
 
 app.UseAuthorization();
-
-// Db initialation
-var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
-await databaseInitializer.InitializeAsync();
 
 // endpoints
 app.MapPost("books",
@@ -149,6 +146,22 @@ app.MapDelete("books/{isbn}",
   .Produces(204)
   .Produces(404)
   .WithTags("Books");
+
+// writing own extensions, ex. html
+app.MapGet("status", () =>
+{
+  return Results.Extensions.Html(@"<!doctype html>
+  <html>
+    <head><title>Status Page</title></head>
+    <body>
+      <h1>Status Page</h1>
+    </body>
+  <html>");
+});
+
+// Db initialation
+var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
+await databaseInitializer.InitializeAsync();
 
 // application start
 app.Run();
