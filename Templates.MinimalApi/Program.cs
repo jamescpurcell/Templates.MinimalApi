@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Templates.MinimalApi;
 using Templates.MinimalApi.Auth;
@@ -14,6 +15,11 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
   //WebRootPath = "./wwwroot",
   //EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
   //ApplicationName = "Library.Api"
+});
+
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AnyOrigin", x => x.AllowAnyOrigin());
 });
 
 builder.Services.Configure<JsonOptions>(options =>
@@ -48,6 +54,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // let's build some middleware
 var app = builder.Build();
+
+app.UseCors();
 
 // Swagger at https://localhost/swagger
 app.UseSwagger(options => { });
@@ -148,7 +156,7 @@ app.MapDelete("books/{isbn}",
   .WithTags("Books");
 
 // writing own extensions, ex. html
-app.MapGet("status", () =>
+app.MapGet("status", [EnableCors("AnyOrigin")] () =>
 {
   return Results.Extensions.Html(@"<!doctype html>
   <html>
@@ -158,6 +166,8 @@ app.MapGet("status", () =>
     </body>
   <html>");
 });
+//.RequireCors("AnyOrigin");// added with attribute above
+//.ExcludeFromDescription();// perfect to remove from swagger
 
 // Db initialation
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
