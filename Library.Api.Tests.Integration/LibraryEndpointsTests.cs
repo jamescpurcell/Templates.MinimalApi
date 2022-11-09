@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Templates.MinimalApi.Models;
 using System.Net;
 using Templates.MinimalApi;
+using System.Runtime.CompilerServices;
 
 namespace Library.Api.Tests.Integration;
 
@@ -10,8 +11,9 @@ public class LibraryEndpointsTests
   : IClassFixture<WebApplicationFactory<IApiMarker>>
 {
   private readonly WebApplicationFactory<IApiMarker> _factory;
+  private readonly List<string> _createdIsbns = new();
 
-  public LibraryEndpointsTests(WebApplicationFactory<IApiMarker> factory)
+  public LibraryEndpointsTests(WebApplicationFactory<IApiMarker> factory, IAsyncLifetime)
   {
     _factory = factory;
   }
@@ -25,6 +27,7 @@ public class LibraryEndpointsTests
 
     // Act
     var result = await httpClient.PostAsJsonAsync("/books", book);
+    _createdIsbns.Add(book.Isbn); // cleanup
     var createdBook = await result.Content.ReadFromJsonAsync<Book>();
 
     // Assert
@@ -46,6 +49,7 @@ public class LibraryEndpointsTests
 
     // Act
     var result = await httpClient.PostAsJsonAsync("/books", book);
+    _createdIsbns.Add(book.Isbn); // cleanup
     var errors = await result.Content.ReadFromJsonAsync<
       IEnumerable<ValidationError>>();
     var error = errors!.Single();
@@ -68,6 +72,7 @@ public class LibraryEndpointsTests
     await httpClient.PostAsJsonAsync("/books", book);
     // Then try to recreate the same book
     var result = await httpClient.PostAsJsonAsync("/books", book);
+    _createdIsbns.Add(book.Isbn); // cleanup
 
     var errors = await result.Content.ReadFromJsonAsync<
       IEnumerable<ValidationError>>();
@@ -95,5 +100,17 @@ public class LibraryEndpointsTests
   {
     return $"{Random.Shared.Next(100, 999)}-" +
            $"{Random.Shared.Next(1000000000, 2100999999)}"; 
+  }
+
+  public Task InitializeAsync() => Task.CompletedTask;
+
+  public async Task DisposeAsync()
+  {
+    var httpClient = _factory.CreateClient();
+
+    foreach (var createdIsbn in _createdIsbns)
+    {
+      await httpClient.DeleteAsync($"/books/{createdIsbn}");
+    }
   }
 }
