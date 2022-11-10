@@ -101,7 +101,7 @@ public class LibraryEndpoints : IEndpoints
     string isbn, IBookService bookService)
   {
     var book = await bookService.GetByIsbnAsync(isbn);
-    return book is not null ? Results.Ok(book) : Results.BadRequest();
+    return book is not null ? Results.Ok(book) : Results.NotFound();
   }
 
   internal static async Task<IResult> UpdateBookAsync(
