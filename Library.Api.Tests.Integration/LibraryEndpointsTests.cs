@@ -115,6 +115,40 @@ public class LibraryEndpointsTests
     result.StatusCode.Should().Be(HttpStatusCode.NotFound);
   }
 
+  [Fact]
+  public async Task GetAllBook_ReturnsAllBooks_WhenBooksExist()
+  {
+    // Arrange
+    var httpClient = _factory.CreateClient();
+    var book = GenerateBook();
+    await httpClient.PostAsJsonAsync("/books", book);
+    _createdIsbns.Add(book.Isbn);
+    var books = new List<Book> { book };
+
+    // Act
+    var result = await httpClient.GetAsync("/books");
+    var returnedBooks = await result.Content.ReadFromJsonAsync<List<Book>>();
+
+    // Assert
+    result.StatusCode.Should().Be(HttpStatusCode.OK);
+    returnedBooks.Should().BeEquivalentTo(books);
+  }
+
+  [Fact]
+  public async Task GetAllBook_ReturnsNoBooks_WhenNoBooksExist()
+  {
+    // Arrange
+    var httpClient = _factory.CreateClient();
+
+    // Act
+    var result = await httpClient.GetAsync("/books");
+    var returnedBooks = await result.Content.ReadFromJsonAsync<List<Book>>();
+
+    // Assert
+    result.StatusCode.Should().Be(HttpStatusCode.OK);
+    returnedBooks.Should().BeEmpty();
+  }
+
   private Book GenerateBook(string title = "The Dirty Coder")
   {
     return new Book
