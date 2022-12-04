@@ -6,7 +6,11 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7170;http://localhost:5170",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Local",
+        "SQL_DATASOURCE": "(Localdb)\\MSSQLLocalDB",
+        "SQL_INITIALCATALOG": "Transactions",
+        "SQL_USERID": "",
+        "SQL_PASSWORD": ""
       }
     }
   }

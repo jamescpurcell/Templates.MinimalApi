@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace Templates.MinimalApi.Data;
@@ -13,7 +13,7 @@ public class SQLServerConnectionFactory : IDbConnectionFactory
 
   public async Task<IDbConnection> CreateConnectionAsync()
   {
-    var connection = new SqliteConnection(_connectionString);
+    var connection = new SqlConnection(_connectionString);
     await connection.OpenAsync();
     return connection;
   }
