@@ -8,6 +8,7 @@ GO
 CREATE TABLE [dbo].[Transactions](
   [Id] [BIGINT] IDENTITY(1,1) NOT NULL,
   [Amount] [DECIMAL](19,4) NOT NULL,
+  [Date] [DATETIME] NOT NULL DEFAULT GETDATE(),
   [Description] [NVARCHAR](255) NULL,
   [Type] [NVARCHAR](50) NOT NULL,
   [IpAddressV4] [NCHAR](15) NULL,

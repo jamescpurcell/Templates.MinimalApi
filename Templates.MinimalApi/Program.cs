@@ -20,7 +20,7 @@ try
     Args = args,
     //WebRootPath = "./wwwroot",
     //EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-    //ApplicationName = "Library.Api"
+    //ApplicationName = "Transactions.Api"
   });
   var environment = builder.Environment.EnvironmentName;
   bool isDevEnv = environment.Any(

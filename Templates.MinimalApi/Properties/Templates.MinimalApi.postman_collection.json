@@ -1,0 +1,81 @@
+{
+	"info": {
+		"_postman_id": "4f422430-270a-4e67-8257-7dd656dda468",
+		"name": "Templates.MinimalApi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1663417"
+	},
+	"item": [
+		{
+			"name": "LibrarySample",
+			"item": [
+				{
+					"name": "Create Books",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"isbn\": \"978-0137081073\",\r\n    \"title\": \"Blazor In Action\",\r\n    \"author\": \"Chris Sainty\",\r\n    \"shortDescription\": \"Blazor In Action the best blazor book ever.\",\r\n    \"pageCount\": 242,\r\n    \"releaseDate\": \"2022-04-13\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7170/books",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7170",
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Books",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7170/Books",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7170",
+							"path": [
+								"Books"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7170/transactions",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7170",
+					"path": [
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

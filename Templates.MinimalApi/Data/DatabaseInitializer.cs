@@ -2,8 +2,6 @@
 
 namespace Templates.MinimalApi.Data;
 
-// usually efcore would do this automatically,
-// but I want to try to implement without efcore
 public class DatabaseInitializer
 {
   private readonly IDbConnectionFactory _connectionFactory;
@@ -16,14 +14,22 @@ public class DatabaseInitializer
   {
     using var connection = await _connectionFactory.CreateConnectionAsync();
     await connection.ExecuteAsync(
-      @"CREATE TABLE IF NOT EXISTS Books(
-        Isbn TEXT PRIMARY KEY,
-        Title TEXT NOT NULL,
-        Author TEXT NOT NULL,
-        ShortDescription TEXT NOT NULL,
-        PageCount INTEGER,
-        ReleaseDate TEXT NOT NULL
-      )"
+      @"USE Transactions;
+        GO
+        SET ANSI_NULLS ON
+        GO
+        SET QUOTED_IDENTIFIER ON
+        GO
+
+        CREATE TABLE [dbo].[Transactions](
+          [Id] [BIGINT] IDENTITY(1,1) NOT NULL,
+          [Amount] [DECIMAL](19,4) NOT NULL,
+          [Description] [NVARCHAR](255) NULL,
+          [Type] [NVARCHAR](50) NOT NULL,
+          [IpAddressV4] [NCHAR](15) NULL,
+          [IpAddressV6] [NCHAR](39) NULL
+        ) ON [PRIMARY]
+        GO"
     );
   }
 }

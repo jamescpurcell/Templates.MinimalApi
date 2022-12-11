@@ -5,9 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <!-- Remove After net 8 or maybe 7-->
-    <!--<EnablePreviewFeatures>true</EnablePreviewFeatures>
-    <NoWarn>CA2252</NoWarn>-->
   </PropertyGroup>
 
   <ItemGroup>

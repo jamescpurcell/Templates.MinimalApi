@@ -5,7 +5,7 @@ using Templates.MinimalApi.Data;
 
 namespace Library.Api.Tests.Integration;
 
-public class LibraryApiFactory : WebApplicationFactory<IApiMarker>
+public class TransactionApiFactory : WebApplicationFactory<IApiMarker>
 {
   protected override void ConfigureWebHost(IWebHostBuilder builder)
   {
